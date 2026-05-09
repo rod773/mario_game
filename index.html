@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Mario Bros Clone</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <div class="game-wrapper">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            
+            <div id="uiOverlay" class="ui-overlay">
+                <div class="glass-panel">
+                    <h1 class="game-title">SUPER MARIO</h1>
+                    <p class="subtitle">HTML5 Canvas Edition</p>
+                    <button id="startBtn" class="primary-btn">Start Game</button>
+                </div>
+            </div>
+
+            <div id="gameOverOverlay" class="ui-overlay hidden">
+                <div class="glass-panel">
+                    <h1 class="game-title text-danger">GAME OVER</h1>
+                    <p class="subtitle">Try again to beat the level!</p>
+                    <button id="restartBtn" class="primary-btn">Restart</button>
+                </div>
+            </div>
+
+            <div class="hud">
+                <div class="hud-item">
+                    <span class="label">SCORE</span>
+                    <span id="scoreDisplay" class="value">000000</span>
+                </div>
+                <div class="hud-item">
+                    <span class="label">COINS</span>
+                    <span id="coinDisplay" class="value">00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="input.js"></script>
+    <script src="entities.js"></script>
+    <script src="level.js"></script>
+    <script src="game.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

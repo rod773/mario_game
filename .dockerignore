@@ -1,0 +1,4 @@
+.gemini
+*.md
+Dockerfile
+.dockerignore
