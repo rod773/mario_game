@@ -18,8 +18,12 @@ class Game {
         this.onScoreUpdate = null;
     }
 
-    init() {
-        const level = parseLevel(levelData);
+    init(levelIndex = 0) {
+        this.levelIndex = levelIndex;
+        if (this.levelIndex >= levels.length) {
+            this.levelIndex = 0; // Wrap around to first level when game is beaten
+        }
+        const level = parseLevel(levels[this.levelIndex]);
         this.blocks = level.blocks;
         this.enemies = level.enemies;
         this.player = new Player(level.playerStart.x, level.playerStart.y, 30, 40);
@@ -77,19 +81,55 @@ class Game {
                 enemy.update(dt);
                 this.applyPhysics(enemy, dt);
 
+                // Enemy-Enemy Collision (for Koopa shell sliding)
+                if (enemy instanceof Koopa && enemy.state === 'sliding') {
+                    for (let j = 0; j < this.enemies.length; j++) {
+                        if (i !== j && !this.enemies[j].dead && !(this.enemies[j] instanceof Item) && this.checkCollision(enemy, this.enemies[j])) {
+                            this.enemies[j].dead = true;
+                            this.score += 100;
+                            if (window.soundManager) window.soundManager.playStomp();
+                        }
+                    }
+                }
+
                 // Player-Enemy Collision
                 if (!enemy.dead && this.checkCollision(this.player, enemy)) {
-                    // Check if player landed on top
-                    if (this.player.vy > 0 && this.player.getBottom() < enemy.getTop() + 15) {
+                    if (enemy instanceof Item) {
                         enemy.dead = true;
-                        this.player.vy = this.player.jumpForce * 0.7; // Bounce
-                        this.score += 100;
-                        if (window.soundManager) window.soundManager.playStomp();
+                        this.player.setSuper(true);
+                        this.score += 1000;
+                        if (window.soundManager) window.soundManager.playPowerup();
                         this.updateHUD();
-                    } else {
-                        // Player takes damage
-                        this.gameOver();
-                        return; // Stop update
+                    } else if (this.player.invulnerable <= 0) {
+                        // Check if Koopa shell is standing still
+                        if (enemy instanceof Koopa && enemy.state === 'shell' && enemy.vx === 0) {
+                            enemy.vx = this.player.x < enemy.x ? 400 : -400;
+                            enemy.state = 'sliding';
+                        }
+                        // Check if player landed on top
+                        else if (this.player.vy > 0 && this.player.getBottom() < enemy.getTop() + 15) {
+                            if (enemy instanceof Koopa && enemy.state === 'walking') {
+                                enemy.state = 'shell';
+                                enemy.vx = 0;
+                                enemy.height = 30; // Shrink visually
+                                enemy.y += 10;
+                            } else {
+                                enemy.dead = true;
+                            }
+                            this.player.vy = this.player.jumpForce * 0.7; // Bounce
+                            this.score += 100;
+                            if (window.soundManager) window.soundManager.playStomp();
+                            this.updateHUD();
+                        } else {
+                            // Player takes damage
+                            if (this.player.isSuper) {
+                                this.player.setSuper(false);
+                                if (window.soundManager) window.soundManager.playPowerdown();
+                            } else {
+                                this.gameOver();
+                                return; // Stop update
+                            }
+                        }
                     }
                 }
             }
@@ -129,6 +169,13 @@ class Game {
     handleCollisions(entity, axis) {
         for (const block of this.blocks) {
             if (this.checkCollision(entity, block)) {
+                if (block instanceof Flagpole) {
+                    if (entity instanceof Player && this.state === 'PLAYING') {
+                        this.levelComplete();
+                    }
+                    continue; // Do not push out of flagpole
+                }
+
                 if (axis === 'x') {
                     if (entity.vx > 0) { // Moving right
                         entity.x = block.getLeft() - entity.width;
@@ -156,6 +203,11 @@ class Game {
                                 this.score += 200;
                                 if (window.soundManager) window.soundManager.playCoin();
                                 this.updateHUD();
+                            } else if (block.type === 'question_mushroom' && !block.hit) {
+                                block.hit = true;
+                                const mushroom = new Item(block.x + 5, block.y, 30, 30);
+                                this.enemies.push(mushroom);
+                                if (window.soundManager) window.soundManager.playBump();
                             } else if (block.type === 'brick') {
                                 // Break brick (optional, for now just score)
                                 this.score += 50;
@@ -240,5 +292,18 @@ class Game {
         if (this.onGameOver) {
             this.onGameOver();
         }
+    }
+
+    levelComplete() {
+        this.state = 'LEVEL_COMPLETE';
+        if (window.soundManager) {
+            window.soundManager.stopMusic();
+            window.soundManager.playTone(523.25, 'square', 0.2, 0.05);
+            setTimeout(() => window.soundManager.playTone(659.25, 'square', 0.2, 0.05), 200);
+            setTimeout(() => window.soundManager.playTone(783.99, 'square', 0.4, 0.05), 400);
+        }
+        setTimeout(() => {
+            this.init(this.levelIndex + 1);
+        }, 3000);
     }
 }

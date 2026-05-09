@@ -23,8 +23,11 @@ At the heart of the game is the `Game` class, which manages the core state (`MEN
 
 ### 2. Entity System (`entities.js`)
 The game relies on an object-oriented approach with a base `Entity` class.
-- **`Player`**: Inherits from `Entity`. It handles user input for movement and jumping, applies gravity, and renders the Mario pixel art.
-- **`Enemy`**: A simple AI that patrols left and right. It inherits from `Entity` and responds to gravity and basic block collisions.
+- **`Player`**: Inherits from `Entity`. It handles user input for movement and jumping, applies gravity, and renders the Mario pixel art. It also supports an `isSuper` state where Mario grows taller and can take an extra hit.
+- **`Enemy` (Goomba)**: A simple AI that patrols left and right. It inherits from `Entity` and responds to gravity and basic block collisions.
+- **`Koopa`**: A slightly taller enemy that retreats into a sliding shell when stomped, which can then be kicked to defeat other enemies.
+- **`Item` (Super Mushroom)**: Spawns from designated `?` blocks, slides along the ground, and grants the player the Super state.
+- **`Flagpole`**: Marks the end of a level and triggers a level transition.
 - **`Block`**: Represents ground, destructible bricks, and interactive question mark blocks.
 
 ### 3. Custom Pixel-Art Rendering
@@ -36,8 +39,10 @@ The game implements a custom physics engine:
 - **Axis Separation**: When a collision is detected, movement is resolved per axis (X first, then Y). This prevents the player from getting stuck in walls and correctly identifies whether the player landed on a platform, hit their head, or ran into a wall.
 - **Entity Interaction**: Landing on an enemy's head bounces the player and defeats the enemy, while touching the side results in a Game Over.
 
-### 5. Level Parsing (`level.js`)
-Levels are designed using a simple ASCII-based grid system. The `parseLevel` function translates string arrays (where `G` is ground, `B` is a brick, `?` is a coin block, `E` is an enemy, and `P` is the player spawn) into the game objects mapped to specific coordinates based on a constant `TILE_SIZE`.
+### 5. Level Parsing and Progression (`level.js`)
+Levels are designed using a simple ASCII-based grid system. The `parseLevel` function translates string arrays into game objects mapped to specific coordinates based on a constant `TILE_SIZE`. 
+Characters include: `G` (ground), `B` (brick), `?` (coin block), `M` (mushroom block), `E` (Goomba), `K` (Koopa), `F` (Flagpole), and `P` (player spawn).
+The game supports an array of levels, automatically transitioning to the next one when Mario touches the Flagpole.
 
 ### 6. Parallax Camera & HUD
 The camera dynamically centers on the player's X-axis. As the player moves forward, the background (hills and clouds) shifts at a slower rate using modulo math to create a parallax scrolling effect. The Heads-Up Display (HUD) overlays the canvas to track the score and coins in real-time.

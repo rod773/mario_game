@@ -27,6 +27,21 @@ class Player extends Entity {
         this.onGround = false;
         this.color = '#ef4444'; // Mario red
         this.facingRight = true;
+        this.isSuper = false;
+        this.invulnerable = 0;
+    }
+
+    setSuper(superState) {
+        if (superState && !this.isSuper) {
+            this.isSuper = true;
+            this.height *= 2;
+            this.y -= this.height / 2;
+        } else if (!superState && this.isSuper) {
+            this.isSuper = false;
+            this.y += this.height / 2;
+            this.height /= 2;
+            this.invulnerable = 2; // 2 seconds invulnerability
+        }
     }
 
     update(dt, input) {
@@ -53,9 +68,18 @@ class Player extends Entity {
 
         // Velocity cap
         if (this.vy > 800) this.vy = 800;
+
+        // Invulnerability timer
+        if (this.invulnerable > 0) {
+            this.invulnerable -= dt;
+        }
     }
 
     draw(ctx, cameraX) {
+        if (this.invulnerable > 0 && Math.floor(performance.now() / 100) % 2 === 0) {
+            return; // Flash effect when invulnerable
+        }
+        
         const marioPixels = [
             ". . . . R R R R R R . . . . . .",
             ". . . R R R R R R R R R R . . .",
@@ -107,6 +131,22 @@ class Player extends Entity {
                 }
             }
         }
+        
+        // Draw lower half if Super Mario
+        if (this.isSuper) {
+            ctx.translate(0, this.height / 2);
+            for (let row = 0; row < 16; row++) {
+                const cols = marioPixels[row].split(' ');
+                for (let col = 0; col < 16; col++) {
+                    const colorCode = cols[col];
+                    if (colorCode !== '.') {
+                        ctx.fillStyle = colors[colorCode] === '#e52521' ? '#049cd8' : colors[colorCode]; // Change some colors for visual difference
+                        ctx.fillRect(col * pixelSizeW, row * pixelSizeH, pixelSizeW + 0.5, pixelSizeH + 0.5);
+                    }
+                }
+            }
+        }
+        
         ctx.restore();
     }
 }
@@ -270,6 +310,121 @@ class Block extends Entity {
                 ctx.fillStyle = colors[colorCode];
                 ctx.fillRect(drawX + col * pixelSizeW, this.y + row * pixelSizeH, pixelSizeW + 0.5, pixelSizeH + 0.5);
             }
+        }
+    }
+}
+
+class Flagpole extends Entity {
+    constructor(x, y, width, height) {
+        super(x, y, width, height);
+    }
+    
+    draw(ctx, cameraX) {
+        const drawX = this.x - cameraX;
+        // Draw pole
+        ctx.fillStyle = '#ffffff'; // White pole
+        ctx.fillRect(drawX + this.width / 2 - 4, this.y, 8, this.height);
+        // Draw ball on top
+        ctx.fillStyle = '#00a800'; // Green ball
+        ctx.beginPath();
+        ctx.arc(drawX + this.width / 2, this.y, 10, 0, Math.PI * 2);
+        ctx.fill();
+        // Draw flag
+        ctx.fillStyle = '#00a800';
+        ctx.fillRect(drawX + this.width / 2 + 4, this.y + 10, 30, 20);
+    }
+}
+
+class Item extends Entity {
+    constructor(x, y, width, height) {
+        super(x, y, width, height);
+        this.vx = 80;
+        this.gravity = 1500;
+        this.onGround = false;
+        this.spawned = false;
+        this.spawnY = y;
+    }
+
+    update(dt) {
+        if (!this.spawned) {
+            this.y -= 30 * dt; // Rise up
+            if (this.spawnY - this.y >= this.height) {
+                this.spawned = true;
+            }
+            return;
+        }
+        this.vy += this.gravity * dt;
+        if (this.vy > 800) this.vy = 800;
+    }
+
+    draw(ctx, cameraX) {
+        const mushroomPixels = [
+            ". . . . B B B B B B B B . . . .",
+            ". . . B R R R R R R R R B . . .",
+            ". . B R R R R R R R R R R B . .",
+            ". B R R W W R R R R W W R R B .",
+            ". B R W W W W R R W W W W R B .",
+            "B R R W W W W R R W W W W R R B",
+            "B R R R W W R R R R W W R R R B",
+            "B R R R R R R R R R R R R R R B",
+            "B R R R R R R W W R R R R R R B",
+            ". B R R R R W W W W R R R R B .",
+            ". . B B B B B B B B B B B B . .",
+            ". . . B W W D W W D W W B . . .",
+            ". . . B W W D W W D W W B . . .",
+            ". . . B W W W W W W W W B . . .",
+            ". . . B W W W W W W W W B . . .",
+            ". . . . B B B B B B B B . . . ."
+        ];
+        const colors = {
+            '.': 'transparent',
+            'B': '#000000',
+            'R': '#e52521', // Red
+            'W': '#ffffff', // White
+            'D': '#000000'  // Eyes
+        };
+        const pixelSizeW = this.width / 16;
+        const pixelSizeH = this.height / 16;
+        const drawX = this.x - cameraX;
+
+        for (let row = 0; row < 16; row++) {
+            const cols = mushroomPixels[row].split(' ');
+            for (let col = 0; col < 16; col++) {
+                const colorCode = cols[col];
+                if (colorCode !== '.') {
+                    ctx.fillStyle = colors[colorCode];
+                    ctx.fillRect(drawX + col * pixelSizeW, this.y + row * pixelSizeH, pixelSizeW + 0.5, pixelSizeH + 0.5);
+                }
+            }
+        }
+    }
+}
+
+class Koopa extends Entity {
+    constructor(x, y, width, height) {
+        super(x, y, width, height);
+        this.vx = -40; 
+        this.gravity = 1500;
+        this.onGround = false;
+        this.state = 'walking'; // 'walking', 'shell', 'sliding'
+    }
+
+    update(dt) {
+        this.vy += this.gravity * dt;
+        if (this.vy > 800) this.vy = 800;
+    }
+
+    draw(ctx, cameraX) {
+        if (this.dead) return;
+        const drawX = this.x - cameraX;
+        
+        ctx.fillStyle = this.state === 'walking' ? '#00a800' : '#432817'; // Green koopa or brown shell
+        ctx.fillRect(drawX, this.y, this.width, this.height);
+        
+        if (this.state === 'walking') {
+            // Draw head
+            ctx.fillStyle = '#fca044';
+            ctx.fillRect(drawX - (this.vx < 0 ? 10 : -this.width), this.y, 10, 10);
         }
     }
 }
