@@ -61,6 +61,6 @@ To play the game on your local machine, you simply need to serve the project dir
 Alternatively, if you want to use the provided Docker setup:
 ```bash
 docker build -t mario-clone .
-docker run -p 8080:80 mario-clone
+docker run -p 8081:80 mario-clone
 ```
-Then navigate to `http://localhost:8080` in your web browser.
+Then navigate to `http://localhost:8081` in your web browser.
