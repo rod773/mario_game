@@ -27,6 +27,7 @@ class Game {
         this.blocks = level.blocks;
         this.enemies = level.enemies;
         this.player = new Player(level.playerStart.x, level.playerStart.y, 30, 40);
+        console.log("Game Init. Player spawned at:", this.player.x, this.player.y);
         
         this.cameraX = 0;
         this.score = 0;
@@ -142,6 +143,7 @@ class Game {
 
         // Check falling out of bounds
         if (this.player.y > this.canvas.height + 100) {
+            console.log("Player fell out of bounds! y:", this.player.y);
             this.gameOver();
         }
     }
@@ -287,6 +289,7 @@ class Game {
     }
 
     gameOver() {
+        console.log("gameOver() called. Player:", this.player);
         this.state = 'GAMEOVER';
         if (window.soundManager) window.soundManager.playGameOver();
         if (this.onGameOver) {

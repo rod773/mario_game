@@ -251,7 +251,7 @@ class Block extends Entity {
                 'M': '#c84c0c', // Main Orange
                 'B': '#000000'  // Black Line
             };
-        } else if (this.type === 'question') {
+        } else if (this.type === 'question' || this.type === 'question_mushroom') {
             if (this.hit) {
                 pixels = [
                     "B B B B B B B B B B B B B B B B",

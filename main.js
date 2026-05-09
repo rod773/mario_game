@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const coinDisplay = document.getElementById('coinDisplay');
 
     const game = new Game(canvas);
+    window.game = game; // Expose for debugging
 
     game.onGameOver = () => {
         gameOverOverlay.classList.remove('hidden');
