@@ -84,6 +84,7 @@ class Game {
                         enemy.dead = true;
                         this.player.vy = this.player.jumpForce * 0.7; // Bounce
                         this.score += 100;
+                        if (window.soundManager) window.soundManager.playStomp();
                         this.updateHUD();
                     } else {
                         // Player takes damage
@@ -153,11 +154,15 @@ class Game {
                                 block.hit = true;
                                 this.coins++;
                                 this.score += 200;
+                                if (window.soundManager) window.soundManager.playCoin();
                                 this.updateHUD();
                             } else if (block.type === 'brick') {
                                 // Break brick (optional, for now just score)
                                 this.score += 50;
+                                if (window.soundManager) window.soundManager.playBump();
                                 this.updateHUD();
+                            } else {
+                                if (window.soundManager) window.soundManager.playBump();
                             }
                         }
                     }
@@ -231,6 +236,7 @@ class Game {
 
     gameOver() {
         this.state = 'GAMEOVER';
+        if (window.soundManager) window.soundManager.playGameOver();
         if (this.onGameOver) {
             this.onGameOver();
         }

@@ -11,6 +11,7 @@ The core objective of this project was to develop a playable Mario clone that fe
 - **HTML5 Canvas**: Provides the drawing API for rendering the game world, player, enemies, and UI.
 - **Vanilla JavaScript (ES6+)**: Powers the game loop, object-oriented entity system, physics engine, and input handling.
 - **CSS3**: Styles the out-of-game UI, including the start screen and game over overlays, utilizing modern techniques like glassmorphism.
+- **Web Audio API**: Dynamically synthesizes retro 8-bit sound effects (square waves and oscillators) and background music directly in the browser, eliminating the need for external audio files.
 - **Docker**: Included for easy containerization and deployment via a simple static file server.
 
 ## 🏗️ Architecture & Creation Process
@@ -40,6 +41,12 @@ Levels are designed using a simple ASCII-based grid system. The `parseLevel` fun
 
 ### 6. Parallax Camera & HUD
 The camera dynamically centers on the player's X-axis. As the player moves forward, the background (hills and clouds) shifts at a slower rate using modulo math to create a parallax scrolling effect. The Heads-Up Display (HUD) overlays the canvas to track the score and coins in real-time.
+
+### 7. Audio System (`sounds.js`)
+To avoid loading external copyright-infringing MP3/WAV files, all game audio is generated procedurally using the browser's native **Web Audio API**. 
+The `SoundManager` class creates `AudioContext` oscillators to generate classic 8-bit square waves:
+- **Background Music**: Plays a looped, multi-note melody sequence.
+- **Sound Effects**: Procedurally creates precise frequencies and pitch bends for actions like jumping, stomping enemies, hitting blocks, and the game over sequence.
 
 ## 🎮 How to Play
 

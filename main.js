@@ -21,6 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function startGame() {
         uiOverlay.classList.add('hidden');
         gameOverOverlay.classList.add('hidden');
+        
+        if (!window.soundManager) {
+            window.soundManager = new SoundManager();
+        }
+        window.soundManager.playMusic();
+        
         game.init();
         canvas.focus(); // Ensure canvas/window has focus for keyboard
     }

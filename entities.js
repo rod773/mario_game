@@ -45,6 +45,7 @@ class Player extends Entity {
         if ((input.isDown('ArrowUp') || input.isDown('KeyW') || input.isDown('Space')) && this.onGround) {
             this.vy = this.jumpForce;
             this.onGround = false;
+            if (window.soundManager) window.soundManager.playJump();
         }
 
         // Apply gravity
